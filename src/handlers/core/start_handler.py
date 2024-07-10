@@ -1,4 +1,5 @@
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, User
+from aiogram.fsm.context import FSMContext
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, User, CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from callbacks_data import PriceListCallback, TariffsCallback, YieldCalculatorCallback
@@ -6,9 +7,14 @@ from db.operations.users_operations import get_or_create_user
 
 
 async def start_handler(
-        message: Message, db_session: AsyncSession
-):
-    user: User = message.from_user
+        call_or_message: CallbackQuery | Message,
+        db_session: AsyncSession,
+        state: FSMContext,
+) -> None:
+
+    await state.clear()
+
+    user: User = call_or_message.from_user
     await get_or_create_user(user_id=user.id,
                              username=user.username,
                              db_session=db_session)
@@ -47,7 +53,7 @@ async def start_handler(
             ],
         ]
     )
-    await message.bot.send_message(
+    await call_or_message.bot.send_message(
         chat_id=user.id,
         text="<b>Привет, на связи Crypto King Pro!</b>\n\n"
              "Наши контакты:\n"
