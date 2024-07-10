@@ -1,8 +1,12 @@
+from pathlib import Path
+
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, User, CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from callbacks_data import PriceListCallback, TariffsCallback, YieldCalculatorCallback
+from callbacks_data import PriceListCallback, TariffsCallback, YieldCalculatorCallback, EditFileCallback, \
+    BackToMainMenuCallback
+from config import settings
 from db.operations.users_operations import get_or_create_user
 
 
@@ -18,7 +22,12 @@ async def start_handler(
     await get_or_create_user(user_id=user.id,
                              username=user.username,
                              db_session=db_session)
+    current_file_path = Path(__file__).resolve()
+    filename = 'menu.txt'
+    price_list_path = current_file_path.parent.parent.parent / 'texts' / filename
 
+    with open(price_list_path, 'r', encoding='utf-8') as file:
+        text = file.read()
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [
@@ -53,10 +62,17 @@ async def start_handler(
             ],
         ]
     )
+    if user.id in settings.ADMINS_ID:
+        edit_button = InlineKeyboardButton(
+            text="Редактировать ✏️",
+            callback_data=EditFileCallback(filename=filename,
+                                           back_callback=BackToMainMenuCallback().pack()).pack(),
+        )
+        keyboard.inline_keyboard.append(
+            [edit_button]
+        )
     await call_or_message.bot.send_message(
         chat_id=user.id,
-        text="<b>Привет, на связи Crypto King Pro!</b>\n\n"
-             "Наши контакты:\n"
-             "7 (495) XXX-XX-XX info@some.domain",
+        text=text,
         reply_markup=keyboard,
     )
