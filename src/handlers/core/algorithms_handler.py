@@ -121,6 +121,21 @@ async def input_power_handler(
         algorithm_data = json.load(file)
     algorithm = algorithm_data[algorithm_name]
 
+    import cfscrape
+
+    scraper = cfscrape.create_scraper()
+
+    try:
+        response = scraper.get(algorithm.get("url").format(hashrate=message.text))
+        response.raise_for_status()  # Проверка на HTTP ошибки
+        print(response.text)
+    except requests.exceptions.HTTPError as http_err:
+        print(f"HTTP error occurred: {http_err}")
+    except Exception as err:
+        print(f"Other error occurred: {err}")
+    return
+
+
     req = Request(algorithm.get("url").format(hashrate=message.text), headers={'User-Agent': 'Mozilla/5.0'})
     fh = urlopen(req)
 
