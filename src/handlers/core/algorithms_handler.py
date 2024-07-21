@@ -120,13 +120,16 @@ async def input_power_handler(
     with open(filepath, 'r', encoding='utf-8') as file:
         algorithm_data = json.load(file)
     algorithm = algorithm_data[algorithm_name]
-
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        "Accept": "application/json"
+    }
     import cfscrape
 
     scraper = cfscrape.create_scraper()
 
     try:
-        response = scraper.get(algorithm.get("url").format(hashrate=message.text))
+        response = scraper.get(algorithm.get("url").format(hashrate=message.text), headers=headers)
         response.raise_for_status()  # Проверка на HTTP ошибки
         print(response.text)
     except requests.exceptions.HTTPError as http_err:
