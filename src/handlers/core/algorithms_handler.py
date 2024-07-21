@@ -9,7 +9,8 @@ from callbacks_data import BackToMainMenuCallback, CalculateAlgorithmCallback, \
     AlgorithmsCallback
 from states import PowerInput
 from utils.pdf_generator import pdf_generator
-
+import urllib.parse
+from urllib.request import Request, urlopen
 
 async def algorithms_handler(
         call: CallbackQuery,
@@ -120,30 +121,25 @@ async def input_power_handler(
         algorithm_data = json.load(file)
     algorithm = algorithm_data[algorithm_name]
 
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-    }
-    url = algorithm.get("url")
-    url = url.format(hashrate=message.text)
-    response = requests.get(url, headers=headers)
-    response.raise_for_status()
-    if response.status_code == 200:
-        resp_data = response.json()
-    else:
-        print("Не удалось получить данные, статус-код:", response.status_code)
+    req = Request(algorithm.get("url").format(hashrate=message.text), headers={'User-Agent': 'Mozilla/5.0'})
+    fh = urlopen(req)
+
+    s_json = fh.read().decode()  # one string format
+    tree = json.loads(s_json)  # tree object.
+
 
     if algorithm_name == 'SHA-256':
-        filename = await pdf_generator(data=resp_data, btc_exchange_rate=resp_data['coins']['Bitcoin']['exchange_rate'],
+        filename = await pdf_generator(data=tree, btc_exchange_rate=tree['coins']['Bitcoin']['exchange_rate'],
                                        user_id=user.id, algo_name=algorithm_name, hashrate=message.text, hash_type=algorithm['hash_type'])
     else:
-        sha_256_url = algorithm_data['SHA-256'].get("url")
-        response = requests.get(sha_256_url, headers=headers)
-        response.raise_for_status()
-        if response.status_code == 200:
-            sha_256_data = response.json()
-        else:
-            print("Не удалось получить данные, статус-код:", response.status_code)
-        filename = await pdf_generator(data=resp_data, btc_exchange_rate=sha_256_data['coins']['Bitcoin']['exchange_rate24'],
+
+        req = Request(algorithm_data['SHA-256'].get("url").format(hashrate=message.text), headers={'User-Agent': 'Mozilla/5.0'})
+        fh = urlopen(req)
+
+        sha_256_data_json = fh.read().decode()  # one string format
+        sha_256_tree = json.loads(sha_256_data_json)  # tree object.
+
+        filename = await pdf_generator(data=tree, btc_exchange_rate=sha_256_tree['coins']['Bitcoin']['exchange_rate24'],
                                        user_id=user.id, algo_name=algorithm_name, hashrate=message.text,
                                        hash_type=algorithm['hash_type'])
 
