@@ -157,7 +157,7 @@ async def pdf_generator(data: dict, btc_exchange_rate: float,
 
     # Создание и сборка документа
     elements = [header, table, date_time, link]
-    pdf_file = current_file_path.parent / "reports" / f"{algo_name}-{user_id}.pdf"
+    pdf_file = current_file_path.parent / f"{algo_name}-{user_id}.pdf"
     # Замените размеры страницы на желаемые
     page_width = 8.5 * inch
     if len(dataset['Name']) == 4:
