@@ -76,28 +76,6 @@ async def start_handler(
         db_session: AsyncSession,
         state: FSMContext,
 ) -> None:
-    user: User = call_or_message.from_user
-
-    session = requests.Session()
-    # выбираем один случайный прокси
-    # proxies = {
-    #     'http': 'http://user:pass@45.152.116.208:63999',
-    #     'https': 'https://user:pass@45.152.116.208:63999'
-    # }
-
-    proxies = {
-        'http': 'socks5://6tC7WB9E:mPs6ENPM@45.152.116.208:63999',
-        'https': 'socks5://6tC7WB9E:mPs6ENPM@45.152.116.208:63999'
-    }
-
-    try:
-        await call_or_message.bot.send_message(chat_id=user.id,
-                                          text="Страница запроса с IP:" + requests.get("https://whattomine.com/asic.json?hh=true&factor[hh_hr]=10&factor[cost_currency]=USD&sort=Profit24&volume=0&revenue=24h&exchanges=binance,bitfinex,coinex,exmo,gate,graviex,hitbtc,ogre,poloniex,xeggex&dataset=Main", timeout=1.5, proxies=proxies).text.strip())
-    except Exception as e:
-        print(e)
-
-    return
-
     await state.clear()
 
     user: User = call_or_message.from_user
