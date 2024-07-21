@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 from config import settings
 from db.db_session import create_async_session
 from handlers import register_core_handlers
-from middlewares import ButtonHideMiddleware
+from middlewares import ButtonHideMiddleware, CleanerMiddleware
 from middlewares.db_middleware import DbSessionMiddleware
 from utils.before_bot_start import start_bot
 
@@ -25,6 +25,7 @@ async def _register_middlewares(
 ) -> None:
     dp.update.middleware.register(DbSessionMiddleware(async_session))
     dp.callback_query.middleware.register(ButtonHideMiddleware(bot=bot))
+    # dp.message.middleware.register(CleanerMiddleware(bot=bot))
 
 
 async def main(bot: Bot) -> None:

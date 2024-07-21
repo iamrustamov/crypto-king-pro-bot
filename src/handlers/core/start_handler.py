@@ -4,8 +4,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, User, CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from callbacks_data import PriceListCallback, TariffsCallback, YieldCalculatorCallback, EditFileCallback, \
-    BackToMainMenuCallback
+from callbacks_data import PriceListCallback, TariffsCallback, EditFileCallback, \
+    BackToMainMenuCallback, AlgorithmsCallback
 from config import settings
 from db.operations.users_operations import get_or_create_user
 
@@ -45,7 +45,7 @@ async def start_handler(
             [
                 InlineKeyboardButton(
                     text="Калькулятор доходности ⛏️",
-                    callback_data=YieldCalculatorCallback().pack(),
+                    callback_data=AlgorithmsCallback().pack(),
                 )
             ],
             [

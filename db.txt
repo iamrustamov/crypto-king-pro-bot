@@ -1,0 +1,2 @@
+docker run --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=2YfmQxixJfu1UFq -e POSTGRES_DB=bot -e PGDATA=/var/lib/postgresql/data/pgdata -d --restart=always -v "/root/postgres/data":/var/lib/postgresql/data postgres:latest
+

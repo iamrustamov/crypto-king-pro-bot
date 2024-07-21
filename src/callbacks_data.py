@@ -2,8 +2,9 @@ from aiogram.filters.callback_data import CallbackData
 
 __all__ = ["PriceListCallback",
            "TariffsCallback",
-           "YieldCalculatorCallback",
+           "AlgorithmsCallback",
            "BackToMainMenuCallback",
+           "CalculateAlgorithmCallback",
            "EditFileCallback"]
 
 
@@ -15,8 +16,12 @@ class TariffsCallback(CallbackData, prefix="tariffs"):
     pass
 
 
-class YieldCalculatorCallback(CallbackData, prefix="yield-calculator"):
+class AlgorithmsCallback(CallbackData, prefix="algorithms"):
     pass
+
+
+class CalculateAlgorithmCallback(CallbackData, prefix="calc-algo"):
+    name: str
 
 
 class BackToMainMenuCallback(CallbackData, prefix="back-to-main-menu"):
