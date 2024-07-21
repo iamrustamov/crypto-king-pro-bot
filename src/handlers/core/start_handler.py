@@ -36,7 +36,40 @@ def get_session(proxies):
     return session
 
 
+import requests
+import requests.auth
 
+class HTTPProxyDigestAuth(requests.auth.HTTPDigestAuth):
+    def handle_407(self, r):
+        """Takes the given response and tries digest-auth, if needed."""
+
+        num_407_calls = r.request.hooks['response'].count(self.handle_407)
+
+        s_auth = r.headers.get('Proxy-authenticate', '')
+
+        if 'digest' in s_auth.lower() and num_407_calls < 2:
+
+            self.chal = requests.auth.parse_dict_header(s_auth.replace('Digest ', ''))
+
+            # Consume content and release the original connection
+            # to allow our new request to reuse the same one.
+            r.content
+            r.raw.release_conn()
+
+            r.request.headers['Authorization'] = self.build_digest_header(r.request.method, r.request.url)
+            r.request.send(anyway=True)
+            _r = r.request.response
+            _r.history.append(r)
+
+            return _r
+
+        return r
+
+    def __call__(self, r):
+        if self.last_nonce:
+            r.headers['Proxy-Authorization'] = self.build_digest_header(r.method, r.url)
+        r.register_hook('response', self.handle_407)
+        return r
 
 async def start_handler(
         call_or_message: CallbackQuery | Message,
@@ -51,14 +84,15 @@ async def start_handler(
     #     'http': 'http://user:pass@45.152.116.208:63999',
     #     'https': 'https://user:pass@45.152.116.208:63999'
     # }
-    proxies = {'http': 'http://6tC7WB9E:mPs6ENPM@45.152.116.208:63998/',
-               'https': 'https://6tC7WB9E:mPs6ENPM@45.152.116.208:63998/'}
-    # "45.152.116.208:63998:6tC7WB9E:mPs6ENPM"
-    session.proxies = proxies
+
+    proxies = {
+        'http': 'socks5://6tC7WB9E:mPs6ENPM@45.152.116.208:63999',
+        'https': 'socks5://6tC7WB9E:mPs6ENPM@45.152.116.208:63999'
+    }
 
     try:
         await call_or_message.bot.send_message(chat_id=user.id,
-                                          text="Страница запроса с IP:" + session.get("https://whattomine.com/asic.json?hh=true&factor[hh_hr]=10&factor[cost_currency]=USD&sort=Profit24&volume=0&revenue=24h&exchanges=binance,bitfinex,coinex,exmo,gate,graviex,hitbtc,ogre,poloniex,xeggex&dataset=Main", timeout=1.5).text.strip())
+                                          text="Страница запроса с IP:" + requests.get("https://whattomine.com/asic.json?hh=true&factor[hh_hr]=10&factor[cost_currency]=USD&sort=Profit24&volume=0&revenue=24h&exchanges=binance,bitfinex,coinex,exmo,gate,graviex,hitbtc,ogre,poloniex,xeggex&dataset=Main", timeout=1.5, proxies=proxies).text.strip())
     except Exception as e:
         print(e)
 
