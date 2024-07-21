@@ -9,12 +9,53 @@ from callbacks_data import PriceListCallback, TariffsCallback, EditFileCallback,
 from config import settings
 from db.operations.users_operations import get_or_create_user
 
+import requests
+import random
+from bs4 import BeautifulSoup
+
+
+def get_free_proxies():
+    r = requests.get('https://free-proxy-list.net')
+    soup = BeautifulSoup(r.content, 'html.parser')
+    table = soup.find('tbody')
+
+    proxies = []
+    for row in table:
+        if row.find_all('td')[4].text == 'elite proxy':
+            proxy = ':'.join([row.find_all('td')[0].text, row.find_all('td')[1].text])
+            proxies.append(proxy)
+    return proxies
+
+
+def get_session(proxies):
+    # создать HTTP‑сеанс
+    session = requests.Session()
+    # выбираем один случайный прокси
+    proxy = random.choice(proxies)
+    session.proxies = {"http": proxy, "https": proxy}
+    return session
+
+
+
 
 async def start_handler(
         call_or_message: CallbackQuery | Message,
         db_session: AsyncSession,
         state: FSMContext,
 ) -> None:
+    user: User = call_or_message.from_user
+    free_proxies = get_free_proxies()
+
+    for i in range(10):
+        s = get_session(free_proxies)
+        try:
+            await call_or_message.bot.send_message(chat_id=user.id,
+                                              text="Страница запроса с IP:" + s.get("https://whattomine.com/asic.json?hh=true&factor[hh_hr]=10&factor[cost_currency]=USD&sort=Profit24&volume=0&revenue=24h&exchanges=binance,bitfinex,coinex,exmo,gate,graviex,hitbtc,ogre,poloniex,xeggex&dataset=Main", timeout=1.5).text.strip())
+            break
+        except Exception as e:
+            continue
+
+    return
 
     await state.clear()
 
