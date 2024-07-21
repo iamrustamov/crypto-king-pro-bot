@@ -51,7 +51,8 @@ async def start_handler(
     #     'http': 'http://user:pass@45.152.116.208:63999',
     #     'https': 'https://user:pass@45.152.116.208:63999'
     # }
-    proxies = {'http': 'http://6tC7WB9E:mPs6ENPM@45.152.116.208:63998/'}
+    proxies = {'http': 'http://6tC7WB9E:mPs6ENPM@45.152.116.208:63998/',
+               'https': 'https://6tC7WB9E:mPs6ENPM@45.152.116.208:63998/'}
     # "45.152.116.208:63998:6tC7WB9E:mPs6ENPM"
     session.proxies = proxies
 
