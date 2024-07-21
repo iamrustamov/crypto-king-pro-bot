@@ -120,9 +120,12 @@ async def input_power_handler(
         algorithm_data = json.load(file)
     algorithm = algorithm_data[algorithm_name]
 
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    }
     url = algorithm.get("url")
     url = url.format(hashrate=message.text)
-    response = requests.get(url)
+    response = requests.get(url, headers=headers)
     response.raise_for_status()
     if response.status_code == 200:
         resp_data = response.json()
@@ -134,7 +137,7 @@ async def input_power_handler(
                                        user_id=user.id, algo_name=algorithm_name, hashrate=message.text, hash_type=algorithm['hash_type'])
     else:
         sha_256_url = algorithm_data['SHA-256'].get("url")
-        response = requests.get(sha_256_url)
+        response = requests.get(sha_256_url, headers=headers)
         response.raise_for_status()
         if response.status_code == 200:
             sha_256_data = response.json()
