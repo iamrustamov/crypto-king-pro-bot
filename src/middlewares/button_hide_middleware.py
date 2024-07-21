@@ -32,9 +32,14 @@ class ButtonHideMiddleware(BaseMiddleware):
                     for button in row:
                         if button.callback_data == callback.data:
                             if callback.message.content_type == ContentType.TEXT:
-                                await callback.message.edit_text(
-                                    f"{callback.message.text}\n\n› {button.text.replace('›', '').replace('‹', '').strip()}️",
-                                )
+                                if button.text == "SHA-256":
+                                    await callback.message.edit_text(
+                                        f"{callback.message.text}\n\n› SHA-256",
+                                    )
+                                else:
+                                    await callback.message.edit_text(
+                                        f"{callback.message.text}\n\n› {button.text.replace('›', '').replace('‹', '').strip()}️",
+                                    )
                             else:
                                 await callback.message.edit_caption(
                                     callback.message.caption

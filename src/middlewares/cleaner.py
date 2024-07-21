@@ -18,7 +18,7 @@ class CleanerMiddleware(BaseMiddleware):
         event: Update,
         data: dict[str, Any],
     ) -> Awaitable[Any] | None:
-        await self._on_process_message(event)
+        await self._on_process_message(event, data)
         result = await handler(event, data)
         return result
 

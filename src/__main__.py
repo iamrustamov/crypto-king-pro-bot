@@ -25,7 +25,7 @@ async def _register_middlewares(
 ) -> None:
     dp.update.middleware.register(DbSessionMiddleware(async_session))
     dp.callback_query.middleware.register(ButtonHideMiddleware(bot=bot))
-    # dp.message.middleware.register(CleanerMiddleware(bot=bot))
+    dp.message.middleware.register(CleanerMiddleware(bot=bot))
 
 
 async def main(bot: Bot) -> None:

@@ -111,7 +111,7 @@ async def start_handler(
             [
                 InlineKeyboardButton(
                     text="Сайт 🌐",
-                    url='https://youtu.be/ltzyroknKDk'
+                    url='https://crypto-king.pro'
                 )
             ],
             [

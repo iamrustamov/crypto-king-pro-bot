@@ -92,25 +92,35 @@ async def input_power_handler(
         message: Message,
         state: FSMContext,
 ) -> None:
-
     user: User = message.from_user
     user_data = await state.get_data()
-
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="Назад",
+                    callback_data=AlgorithmsCallback().pack(),
+                )
+            ],
+        ]
+    )
     try:
-        # Попытка преобразовать текст в число с плавающей точкой
         number = float(message.text)
-        # Проверка, что число положительное
         if number < 0:
-            await message.bot.send_message(chat_id=user.id,
-                                           text="Введите положительное число:")
+            msg = await message.bot.send_message(chat_id=user.id,
+                                                 text="Введите положительное число:",
+                                                 reply_markup=keyboard)
+            await state.update_data({'previous_messages_id': [msg.message_id]})
             return
     except ValueError:
-        await message.bot.send_message(chat_id=user.id,
-                                       text="Введите положительное число:")
+        msg = await message.bot.send_message(chat_id=user.id,
+                                             text="Введите положительное число:",
+                                             reply_markup=keyboard)
+
+        await state.update_data({'previous_messages_id': [msg.message_id]})
         return
 
     await state.clear()
-    # Проверка на int
     current_file_path = Path(__file__).resolve()
     filename = "algorithms.json"
     filepath = current_file_path.parent.parent.parent / 'texts' / filename
@@ -134,7 +144,8 @@ async def input_power_handler(
 
     if algorithm_name == 'SHA-256':
         filename = await pdf_generator(data=resp_data, btc_exchange_rate=resp_data['coins']['Bitcoin']['exchange_rate'],
-                                       user_id=user.id, algo_name=algorithm_name, hashrate=message.text, hash_type=algorithm['hash_type'])
+                                       user_id=user.id, algo_name=algorithm_name, hashrate=message.text,
+                                       hash_type=algorithm['hash_type'])
     else:
         sha_256_url = algorithm_data['SHA-256'].get("url")
         response = requests.get(sha_256_url, timeout=3, proxies=proxies)
@@ -143,21 +154,12 @@ async def input_power_handler(
             sha_256_data = response.json()
         else:
             print("Не удалось получить данные, статус-код:", response.status_code)
-        filename = await pdf_generator(data=resp_data, btc_exchange_rate=sha_256_data['coins']['Bitcoin']['exchange_rate24'],
+        filename = await pdf_generator(data=resp_data,
+                                       btc_exchange_rate=sha_256_data['coins']['Bitcoin']['exchange_rate24'],
                                        user_id=user.id, algo_name=algorithm_name, hashrate=message.text,
                                        hash_type=algorithm['hash_type'])
 
-    keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(
-                    text="Назад",
-                    callback_data=AlgorithmsCallback().pack(),
-                )
-            ],
-        ]
-    )
-    await message.bot.send_chat_action(chat_id=user.id,action="upload_document")
+    await message.bot.send_chat_action(chat_id=user.id, action="upload_document")
     await message.bot.send_document(
         chat_id=user.id,
         document=FSInputFile(filename, filename="отчет.pdf")
