@@ -1,7 +1,8 @@
 from pathlib import Path
 
 from aiogram.fsm.context import FSMContext
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, User, CallbackQuery
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, User, CallbackQuery, KeyboardButton, \
+    ReplyKeyboardMarkup
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from callbacks_data import PriceListCallback, TariffsCallback, EditFileCallback, \
@@ -9,67 +10,6 @@ from callbacks_data import PriceListCallback, TariffsCallback, EditFileCallback,
 from config import settings
 from db.operations.users_operations import get_or_create_user
 
-import requests
-import random
-from bs4 import BeautifulSoup
-
-
-def get_free_proxies():
-    r = requests.get('https://free-proxy-list.net')
-    soup = BeautifulSoup(r.content, 'html.parser')
-    table = soup.find('tbody')
-
-    proxies = []
-    for row in table:
-        if row.find_all('td')[4].text == 'elite proxy':
-            proxy = ':'.join([row.find_all('td')[0].text, row.find_all('td')[1].text])
-            proxies.append(proxy)
-    return proxies
-
-
-def get_session(proxies):
-    # создать HTTP‑сеанс
-    session = requests.Session()
-    # выбираем один случайный прокси
-    proxy = random.choice(proxies)
-    session.proxies = {"http": "45.152.116.208:63998:6tC7WB9E:mPs6ENPM", "https": "45.152.116.208:63998:6tC7WB9E:mPs6ENPM"}
-    return session
-
-
-import requests
-import requests.auth
-
-class HTTPProxyDigestAuth(requests.auth.HTTPDigestAuth):
-    def handle_407(self, r):
-        """Takes the given response and tries digest-auth, if needed."""
-
-        num_407_calls = r.request.hooks['response'].count(self.handle_407)
-
-        s_auth = r.headers.get('Proxy-authenticate', '')
-
-        if 'digest' in s_auth.lower() and num_407_calls < 2:
-
-            self.chal = requests.auth.parse_dict_header(s_auth.replace('Digest ', ''))
-
-            # Consume content and release the original connection
-            # to allow our new request to reuse the same one.
-            r.content
-            r.raw.release_conn()
-
-            r.request.headers['Authorization'] = self.build_digest_header(r.request.method, r.request.url)
-            r.request.send(anyway=True)
-            _r = r.request.response
-            _r.history.append(r)
-
-            return _r
-
-        return r
-
-    def __call__(self, r):
-        if self.last_nonce:
-            r.headers['Proxy-Authorization'] = self.build_digest_header(r.method, r.url)
-        r.register_hook('response', self.handle_407)
-        return r
 
 async def start_handler(
         call_or_message: CallbackQuery | Message,
@@ -82,6 +22,16 @@ async def start_handler(
     await get_or_create_user(user_id=user.id,
                              username=user.username,
                              db_session=db_session)
+
+    buttons = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='⛏️Калькулятор доходности')],
+                                            [KeyboardButton(text='👈 Главное меню')]
+                                            ])
+    await call_or_message.bot.send_message(
+        chat_id=user.id,
+        text="<b>Привет, на связи Crypto King Pro!</b>",
+        reply_markup=buttons,
+    )
+
     current_file_path = Path(__file__).resolve()
     filename = 'menu.txt'
     price_list_path = current_file_path.parent.parent.parent / 'texts' / filename
@@ -92,31 +42,31 @@ async def start_handler(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="Прайс лист 📄",
+                    text="📄 Прайс лист",
                     callback_data=PriceListCallback().pack(),
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text="Тарифы ⚡️",
+                    text="⚡️ Тарифы",
                     callback_data=TariffsCallback().pack(),
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text="Калькулятор доходности ⛏️",
+                    text="⛏️ Калькулятор доходности",
                     callback_data=AlgorithmsCallback().pack(),
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text="Сайт 🌐",
+                    text="🌐 Сайт",
                     url='https://crypto-king.pro'
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text="Поддержка 💬",
+                    text="💬 Поддержка",
                     url=f"tg://user?id=286613674"
                 )
             ],
@@ -124,7 +74,7 @@ async def start_handler(
     )
     if user.id in settings.ADMINS_ID:
         edit_button = InlineKeyboardButton(
-            text="Редактировать ✏️",
+            text="✏️ Редактировать",
             callback_data=EditFileCallback(filename=filename,
                                            back_callback=BackToMainMenuCallback().pack()).pack(),
         )

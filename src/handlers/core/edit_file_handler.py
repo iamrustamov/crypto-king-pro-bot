@@ -19,7 +19,7 @@ async def edit_file_handler(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="Отмена 🚫",
+                    text="🚫 Отмена",
                     callback_data=callback_data.back_callback
                 )
             ]
@@ -52,7 +52,7 @@ async def write_new_text_handler(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="Ок!",
+                    text="🆗",
                     callback_data=user_data.get('back_callback')
                 )
             ]

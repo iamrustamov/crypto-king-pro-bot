@@ -12,7 +12,7 @@ from utils.pdf_generator import pdf_generator
 
 
 async def algorithms_handler(
-        call: CallbackQuery,
+        call_or_message: CallbackQuery | Message,
         state: FSMContext,
 ) -> None:
     await state.clear()
@@ -34,15 +34,15 @@ async def algorithms_handler(
             [button]
         )
     button = InlineKeyboardButton(
-        text="Назад",
+        text="‹ Назад",
         callback_data=BackToMainMenuCallback().pack(),
     )
     keyboard.inline_keyboard.append(
         [button]
     )
 
-    await call.bot.send_message(
-        chat_id=call.from_user.id,
+    await call_or_message.bot.send_message(
+        chat_id=call_or_message.from_user.id,
         text="Выберите алгоритм:",
         reply_markup=keyboard,
     )
@@ -71,7 +71,7 @@ async def calculate_algorithm_handler(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="Отменить",
+                    text="🚫 Отменить",
                     callback_data=AlgorithmsCallback().pack(),
                 )
             ],
@@ -94,11 +94,13 @@ async def input_power_handler(
 ) -> None:
     user: User = message.from_user
     user_data = await state.get_data()
+    await message.bot.send_message(chat_id=user.id,
+                                   text="♻ Получение данных... Пожалуйста, подождите.")
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="Назад",
+                    text="‹ Назад",
                     callback_data=AlgorithmsCallback().pack(),
                 )
             ],
@@ -108,13 +110,13 @@ async def input_power_handler(
         number = float(message.text)
         if number < 0:
             msg = await message.bot.send_message(chat_id=user.id,
-                                                 text="Введите положительное число:",
+                                                 text="⚠️ Введите положительное число:",
                                                  reply_markup=keyboard)
             await state.update_data({'previous_messages_id': [msg.message_id]})
             return
     except ValueError:
         msg = await message.bot.send_message(chat_id=user.id,
-                                             text="Введите положительное число:",
+                                             text="⚠️ Введите число:",
                                              reply_markup=keyboard)
 
         await state.update_data({'previous_messages_id': [msg.message_id]})
@@ -141,7 +143,9 @@ async def input_power_handler(
         resp_data = response.json()
     else:
         print("Не удалось получить данные, статус-код:", response.status_code)
-
+        await message.bot.send_message(chat_id=user.id,
+                                       text="👾 Не удалось сформировать отчет")
+        return
     if algorithm_name == 'SHA-256':
         filename = await pdf_generator(data=resp_data, btc_exchange_rate=resp_data['coins']['Bitcoin']['exchange_rate'],
                                        user_id=user.id, algo_name=algorithm_name, hashrate=message.text,
@@ -154,17 +158,17 @@ async def input_power_handler(
             sha_256_data = response.json()
         else:
             print("Не удалось получить данные, статус-код:", response.status_code)
+            await message.bot.send_message(chat_id=user.id,
+                                           text="👾 Не удалось сформировать отчет")
+            return
         filename = await pdf_generator(data=resp_data,
                                        btc_exchange_rate=sha_256_data['coins']['Bitcoin']['exchange_rate24'],
                                        user_id=user.id, algo_name=algorithm_name, hashrate=message.text,
                                        hash_type=algorithm['hash_type'])
 
-    await message.bot.send_chat_action(chat_id=user.id, action="upload_document")
     await message.bot.send_document(
         chat_id=user.id,
-        document=FSInputFile(filename, filename="отчет.pdf")
+        document=FSInputFile(filename, filename="report.pdf"),
+        caption=f"{algorithm_name} {message.text} {algorithm['hash_type']}",
     )
-    await message.bot.send_message(chat_id=user.id,
-                                   text=f"{algorithm_name} {message.text} {algorithm['hash_type']}",
-                                   reply_markup=keyboard)
     filename.unlink(missing_ok=True)

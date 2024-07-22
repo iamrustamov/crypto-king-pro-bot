@@ -23,7 +23,7 @@ async def price_list_handler(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="Назад",
+                    text="‹ Назад",
                     callback_data=BackToMainMenuCallback().pack(),
                 )
             ],
@@ -31,7 +31,7 @@ async def price_list_handler(
     )
     if message.from_user.id in settings.ADMINS_ID:
         edit_button = InlineKeyboardButton(
-            text="Редактировать ✏️",
+            text="✏️ Редактировать",
             callback_data=EditFileCallback(filename=filename,
                                            back_callback=PriceListCallback().pack()).pack(),
         )
