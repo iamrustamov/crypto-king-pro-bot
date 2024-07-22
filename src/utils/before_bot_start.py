@@ -1,6 +1,7 @@
 from aiogram import Bot
 from aiogram.types import BotName, Message
 
+from utils.bot_commands import bot_commands
 from config import settings
 
 
@@ -14,6 +15,7 @@ async def start_bot(bot: Bot) -> Message:
     :return: Message
     """
     # Get commands
+    await bot_commands(bot)
     bot_name: BotName = await bot.get_my_name()
     return await bot.send_message(
         chat_id=settings.ADMINS_ID[0], text=f'The "{bot_name.name}" bot has been launched!'
