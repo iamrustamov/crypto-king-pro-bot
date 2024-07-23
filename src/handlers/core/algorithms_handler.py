@@ -11,6 +11,17 @@ from states import PowerInput
 from utils.pdf_generator import pdf_generator
 
 
+def mh_to_gh(mh):
+    # Преобразование MH/s в GH/s
+    gh = mh / 1000.0
+
+    # Форматирование до одной десятичной цифры
+    formatted_gh = f"{gh:.1f}"
+
+    return formatted_gh
+
+
+
 async def algorithms_handler(
         call_or_message: CallbackQuery | Message,
         state: FSMContext,
@@ -146,6 +157,9 @@ async def input_power_handler(
         await message.bot.send_message(chat_id=user.id,
                                        text="👾 Не удалось сформировать отчет")
         return
+    if algorithm_name == 'Scrypt':
+        message.text = mh_to_gh(message.text)
+
     if algorithm_name == 'SHA-256':
         filename = await pdf_generator(data=resp_data, btc_exchange_rate=resp_data['coins']['Bitcoin']['exchange_rate'],
                                        user_id=user.id, algo_name=algorithm_name, hashrate=message.text,
