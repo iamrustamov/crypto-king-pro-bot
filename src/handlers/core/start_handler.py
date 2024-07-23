@@ -25,7 +25,8 @@ async def start_handler(
 
     buttons = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='⛏️Калькулятор доходности')],
                                             [KeyboardButton(text='👈 Главное меню')]
-                                            ])
+                                            ],
+                                  resize_keyboard=True)
     await call_or_message.bot.send_message(
         chat_id=user.id,
         text="<b>Привет, на связи Crypto King Pro!</b>",
