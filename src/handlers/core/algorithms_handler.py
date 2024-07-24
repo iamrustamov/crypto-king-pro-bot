@@ -11,9 +11,9 @@ from states import PowerInput
 from utils.pdf_generator import pdf_generator
 
 
-def mh_to_gh(mh):
+def mh_to_gh(mh: str):
     # Преобразование MH/s в GH/s
-    gh = mh / 1000.0
+    gh = float(mh) / 1000.0
 
     # Форматирование до одной десятичной цифры
     formatted_gh = f"{gh:.1f}"
@@ -105,8 +105,6 @@ async def input_power_handler(
 ) -> None:
     user: User = message.from_user
     user_data = await state.get_data()
-    await message.bot.send_message(chat_id=user.id,
-                                   text="♻ Получение данных... Пожалуйста, подождите.")
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [
@@ -132,7 +130,8 @@ async def input_power_handler(
 
         await state.update_data({'previous_messages_id': [msg.message_id]})
         return
-
+    await message.bot.send_message(chat_id=user.id,
+                                   text="♻ Получение данных... Пожалуйста, подождите.")
     await state.clear()
     current_file_path = Path(__file__).resolve()
     filename = "algorithms.json"
@@ -147,7 +146,11 @@ async def input_power_handler(
         'https': 'socks5://6tC7WB9E:mPs6ENPM@45.152.116.208:63999'
     }
     url = algorithm.get("url")
-    url = url.format(hashrate=message.text)
+    if algorithm_name == 'Scrypt':
+        hashrate = mh_to_gh(message.text)
+    else:
+        hashrate = message.text
+    url = url.format(hashrate=hashrate)
     response = requests.get(url, timeout=3, proxies=proxies)
     response.raise_for_status()
     if response.status_code == 200:
@@ -157,12 +160,12 @@ async def input_power_handler(
         await message.bot.send_message(chat_id=user.id,
                                        text="👾 Не удалось сформировать отчет")
         return
-    if algorithm_name == 'Scrypt':
-        message.text = mh_to_gh(message.text)
+
+
 
     if algorithm_name == 'SHA-256':
         filename = await pdf_generator(data=resp_data, btc_exchange_rate=resp_data['coins']['Bitcoin']['exchange_rate'],
-                                       user_id=user.id, algo_name=algorithm_name, hashrate=message.text,
+                                       user_id=user.id, algo_name=algorithm_name, hashrate=hashrate,
                                        hash_type=algorithm['hash_type'])
     else:
         sha_256_url = algorithm_data['SHA-256'].get("url")

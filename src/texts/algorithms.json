@@ -6,5 +6,5 @@
   "KHeavyHash (KAS)": {"coins": ["Kaspa", "Nicehash-kHeavyHash", "Sedra", "Bugna"], "hash_type": "Th/s",
   "url":  "http://whattomine.com/asic.json?hh=true&factor[hh_hr]={hashrate}&factor[cost_currency]=USD&sort=Profit24&volume=0&revenue=24h&exchanges=binance,bitfinex,coinex,exmo,gate,graviex,hitbtc,ogre,poloniex,xeggex&dataset=Main"},
   "Ethash4G": {"coins": ["Hypra", "Bitnet BTN", "OctaSpace", "EthereumClassic", "Nicehash-Etchash", "Larissa", "Etica", "Dogether", "Callisto", "Etho"], "hash_type": "Mh/s",
-  "url":  "http://whattomine.com/coins.json?e4g=true&factor[e4g_hr]=1,2&factor[cost_currency]=USD&sort=Profitability24&volume=0&revenue=24h&exchanges=binance,bitfinex,coinex,exmo,gate,graviex,hitbtc,ogre,poloniex,xeggex&dataset="}
+  "url":  "http://whattomine.com/coins.json?e4g=true&factor[e4g_hr]={hashrate}&factor[cost_currency]=USD&sort=Profitability24&volume=0&revenue=24h&exchanges=binance,bitfinex,coinex,exmo,gate,graviex,hitbtc,ogre,poloniex,xeggex&dataset="}
 }
